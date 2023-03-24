@@ -30,6 +30,8 @@ public class Player : MonoBehaviour
     private float _inputX;
     private float _inputY;
     private float _inputJump;
+    private bool _canJump;
+    private bool _isJumping;
 
     //Logic
     private bool _isAirborne = false;
@@ -52,9 +54,15 @@ public class Player : MonoBehaviour
 
     void Update()
     {
+        //Input handling
         _inputX = Input.GetAxisRaw("Horizontal");
         _inputY = Input.GetAxisRaw("Vertical");
         _inputJump = Input.GetAxisRaw("Jump");
+
+        if (_inputJump == 0 && !_isAirborne)
+        {
+            _canJump = true;
+        }
     }
 
     private void FixedUpdate()
@@ -63,16 +71,35 @@ public class Player : MonoBehaviour
 
         Vector2 displacement = Vector3.zero;
 
+        //Ground/down collision
+        RaycastHit2D dHit = Physics2D.Raycast(position, Vector3.down, downwardLength, _layermask);
+        Debug.DrawLine(position, transform.position + (Vector3.down * downwardLength), Color.red);
+        if (dHit.collider != null)
+        {
+            displacement.y = Mathf.Clamp(displacement.y, 0, Single.MaxValue);
+            _isAirborne = false;
+            _jumpTime = 0.0f;
+        }
+        else
+        {
+            _isAirborne = true;
+        }
 
         //Jumping 
-        if ((_inputJump > 0 && _jumpTime < jumpDuration) || (_isAirborne && _jumpTime < jumpMinDuration))
+        if (_isJumping && _inputJump == 0)
+        {
+            _isJumping = false;
+        }
+
+        if ((_inputJump > 0 && _jumpTime < jumpDuration) || (_isAirborne && _jumpTime < jumpMinDuration) && _isJumping)
         {
             //Initial hit
-            if (!_isAirborne)
+            if (!_isAirborne && _canJump)
             {
                 _rigidbody.velocity = new Vector2(_rigidbody.velocity.x, 0);
                 _rigidbody.AddForce(Vector2.up * jumpStrength, ForceMode2D.Impulse);
-                _isAirborne = true;
+                _canJump = false;
+                _isJumping = true;
             }
 
             _activeGravity = gravity;
@@ -82,6 +109,7 @@ public class Player : MonoBehaviour
         else
         {
             _activeGravity = gravity * jumpModif;
+            _isJumping = false;
         }
 
         //Movement application + gravity
@@ -113,13 +141,6 @@ public class Player : MonoBehaviour
             displacement.x = Mathf.Clamp(displacement.x, 0, Single.MaxValue);
         }
 
-        RaycastHit2D dHit = Physics2D.Raycast(position, Vector3.down, downwardLength, _layermask);
-        if (dHit.collider != null)
-        {
-            displacement.y = Mathf.Clamp(displacement.y, 0, Single.MaxValue);
-            _isAirborne = false;
-            _jumpTime = 0.0f;
-        }
 
         RaycastHit2D uHit = Physics2D.Raycast(position, Vector3.down, downwardLength, _layermask);
         if (uHit.collider != null)

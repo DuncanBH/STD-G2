@@ -9,7 +9,10 @@ public class Player : MonoBehaviour
     //Parameters
     [SerializeField] private float moveSpeed;
     [SerializeField] private float slowDownModif = 0.5f;
+    [SerializeField] private float jumpStrength = 1;
     [SerializeField] private float jumpModif = 1;
+    [SerializeField] private float jumpMinDuration = 0.2f;
+    [SerializeField] private float jumpDuration = 1.0f;
     [SerializeField] private float gravity = 1;
     [SerializeField] private float rightLength = 2;
     [SerializeField] private float downwardLength = 2;
@@ -18,7 +21,7 @@ public class Player : MonoBehaviour
     private Transform _transform;
     private Rigidbody2D _rigidbody;
     private CapsuleCollider2D _collider;
-    
+
     private int _layermask;
     private float _width;
     private float _height;
@@ -27,9 +30,11 @@ public class Player : MonoBehaviour
     private float _inputX;
     private float _inputY;
     private float _inputJump;
-    
+
     //Logic
     private bool _isAirborne = false;
+    private float _jumpTime = 0.0f;
+    private float _activeGravity;
 
     void Start()
     {
@@ -41,6 +46,8 @@ public class Player : MonoBehaviour
         _height = _collider.size.y / 2;
 
         _layermask = ~(1 << LayerMask.NameToLayer("Player"));
+
+        _activeGravity = gravity;
     }
 
     void Update()
@@ -56,27 +63,43 @@ public class Player : MonoBehaviour
 
         Vector2 displacement = Vector3.zero;
 
-        //Movement application + gravity
-        displacement += new Vector2(_inputX * moveSpeed, -( gravity / 10));
 
         //Jumping 
-        if (_inputJump > 0 && !_isAirborne)
+        if ((_inputJump > 0 && _jumpTime < jumpDuration) || (_isAirborne && _jumpTime < jumpMinDuration))
         {
-            _rigidbody.AddForce(Vector2.up * jumpModif, ForceMode2D.Impulse);
-            _isAirborne = true;
+            //Initial hit
+            if (!_isAirborne)
+            {
+                _rigidbody.velocity = new Vector2(_rigidbody.velocity.x, 0);
+                _rigidbody.AddForce(Vector2.up * jumpStrength, ForceMode2D.Impulse);
+                _isAirborne = true;
+            }
+
+            _activeGravity = gravity;
+
+            _jumpTime += Time.fixedDeltaTime;
         }
-        
+        else
+        {
+            _activeGravity = gravity * jumpModif;
+        }
+
+        //Movement application + gravity
+        displacement += new Vector2(_inputX * moveSpeed, -_activeGravity);
+
         //apply constraints
         if (_inputX == 0 && !_isAirborne)
         {
             Vector2 velocity = _rigidbody.velocity;
             _rigidbody.velocity = new Vector2(velocity.x * slowDownModif, velocity.y);
-        } else if (!_isAirborne && (_rigidbody.velocity.x > 0 && _inputX < 0) || (_rigidbody.velocity.x < 0 && _inputX > 0))
+        }
+        else if (!_isAirborne && (_rigidbody.velocity.x > 0 && _inputX < 0) ||
+                 (_rigidbody.velocity.x < 0 && _inputX > 0))
         {
             Vector2 velocity = _rigidbody.velocity;
             _rigidbody.velocity = new Vector2(velocity.x * slowDownModif, velocity.y);
         }
-        
+
         //Collision checks
         RaycastHit2D fHit = Physics2D.Raycast(position, Vector3.right, rightLength, _layermask);
         if (fHit.collider != null)
@@ -95,6 +118,7 @@ public class Player : MonoBehaviour
         {
             displacement.y = Mathf.Clamp(displacement.y, 0, Single.MaxValue);
             _isAirborne = false;
+            _jumpTime = 0.0f;
         }
 
         RaycastHit2D uHit = Physics2D.Raycast(position, Vector3.down, downwardLength, _layermask);
@@ -102,7 +126,7 @@ public class Player : MonoBehaviour
         {
             displacement.y = Mathf.Clamp(displacement.y, Single.MinValue, 0);
         }
-        
+
         //apply movement
         _rigidbody.velocity += displacement;
     }

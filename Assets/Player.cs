@@ -34,7 +34,7 @@ public class Player : MonoBehaviour
     private bool _isJumping;
 
     //Logic
-    private bool _isAirborne = false;
+    private bool _isGrounded = false;
     private float _jumpTime = 0.0f;
     private float _activeGravity;
 
@@ -44,8 +44,9 @@ public class Player : MonoBehaviour
         _rigidbody = GetComponent<Rigidbody2D>();
         _collider = GetComponent<CapsuleCollider2D>();
 
-        _width = _collider.size.x / 2;
-        _height = _collider.size.y / 2;
+        var size = _collider.size;
+        _width = size.x / 2;
+        _height = size.y / 2;
 
         _layermask = ~(1 << LayerMask.NameToLayer("Player"));
 
@@ -59,7 +60,7 @@ public class Player : MonoBehaviour
         _inputY = Input.GetAxisRaw("Vertical");
         _inputJump = Input.GetAxisRaw("Jump");
 
-        if (_inputJump == 0 && !_isAirborne)
+        if (_inputJump == 0 && _isGrounded)
         {
             _canJump = true;
         }
@@ -71,11 +72,10 @@ public class Player : MonoBehaviour
 
         Vector2 displacement = Vector3.zero;
 
-        _isAirborne = !DoGroundCheck();
+        _isGrounded = DoGroundCheck();
 
-        if (!_isAirborne)
+        if (_isGrounded)
         {
-            displacement.y = Mathf.Clamp(displacement.y, 0, Single.MaxValue);
             _jumpTime = 0.0f;
         }
 
@@ -85,10 +85,10 @@ public class Player : MonoBehaviour
             _isJumping = false;
         }
 
-        if ((_inputJump > 0 && _jumpTime < jumpDuration) || (_isAirborne && _jumpTime < jumpMinDuration) && _isJumping)
+        if ((_inputJump > 0 && _jumpTime < jumpDuration) || (!_isGrounded && _jumpTime < jumpMinDuration) && _isJumping)
         {
-            //Initial hit
-            if (!_isAirborne && _canJump)
+            //Initial propulsion
+            if (_isGrounded && _canJump)
             {
                 _rigidbody.velocity = new Vector2(_rigidbody.velocity.x, 0);
                 _rigidbody.AddForce(Vector2.up * jumpStrength, ForceMode2D.Impulse);
@@ -110,27 +110,31 @@ public class Player : MonoBehaviour
         displacement += new Vector2(_inputX * moveSpeed, -_activeGravity);
 
         //apply constraints
-        if (_inputX == 0 && !_isAirborne)
+        if (_inputX == 0 && _isGrounded) // no direction on ground
         {
             Vector2 velocity = _rigidbody.velocity;
             _rigidbody.velocity = new Vector2(velocity.x * slowDownModif, velocity.y);
         }
-        else if (!_isAirborne && (_rigidbody.velocity.x > 0 && _inputX < 0) ||
-                 (_rigidbody.velocity.x < 0 && _inputX > 0))
+        else if (_isGrounded && (_rigidbody.velocity.x > 0 && _inputX < 0) ||
+                 (_rigidbody.velocity.x < 0 && _inputX > 0)) // opposite direction on ground
         {
             Vector2 velocity = _rigidbody.velocity;
             _rigidbody.velocity = new Vector2(velocity.x * slowDownModif, velocity.y);
         }
 
         //Collision checks
-        RaycastHit2D fHit = Physics2D.Raycast(position, Vector3.right, rightLength, _layermask);
-        if (fHit.collider != null)
+
+        if (_isGrounded)
+        {
+            displacement.y = Mathf.Clamp(displacement.y, 0, Single.MaxValue);
+        }
+
+        if (DoForwardCheck())
         {
             displacement.x = Mathf.Clamp(displacement.x, Single.MinValue, 0);
         }
 
-        RaycastHit2D bHit = Physics2D.Raycast(position, -Vector3.right, rightLength, _layermask);
-        if (bHit.collider != null)
+        if (DoBackwardCheck())
         {
             displacement.x = Mathf.Clamp(displacement.x, 0, Single.MaxValue);
         }
@@ -146,14 +150,61 @@ public class Player : MonoBehaviour
         _rigidbody.velocity += displacement;
     }
 
-    private bool DoGroundCheck()
+    private bool DoForwardCheck()
     {
-        RaycastHit2D midHit = Physics2D.Raycast(transform.position, Vector3.down, downwardLength, _layermask);
-        Debug.DrawLine(transform.position, transform.position + (Vector3.down * downwardLength), Color.red);
+        var position = transform.position;
+
+        RaycastHit2D midHit = Physics2D.Raycast(position, Vector3.right, rightLength, _layermask);
+        Debug.DrawLine(position, new Vector2(position.x + rightLength, position.y), Color.red);
         if (midHit.collider != null)
             return true;
 
+        var gap = _height * 0.80f;
+
+        RaycastHit2D topHit = Physics2D.Raycast(new Vector2(position.x, position.y + gap), Vector3.right,
+            rightLength, _layermask);
+        Debug.DrawLine(new Vector2(position.x, position.y + gap),
+            new Vector2(position.x + rightLength, position.y + gap), Color.blue);
+
+        RaycastHit2D bottomHit = Physics2D.Raycast(new Vector2(position.x, position.y - gap), Vector3.right,
+            rightLength, _layermask);
+        Debug.DrawLine(new Vector2(position.x, position.y - gap),
+            new Vector2(position.x + rightLength, position.y - gap), Color.blue);
+
+        return topHit.collider != null || bottomHit.collider != null;
+    }
+
+    private bool DoBackwardCheck()
+    {
         var position = transform.position;
+
+        RaycastHit2D midHit = Physics2D.Raycast(position, -Vector3.right, rightLength, _layermask);
+        Debug.DrawLine(position, new Vector2(position.x - rightLength, position.y), Color.red);
+        if (midHit.collider != null)
+            return true;
+
+        var gap = _height * 0.80f;
+
+        RaycastHit2D topHit = Physics2D.Raycast(new Vector2(position.x, position.y + gap), -Vector3.right,
+            rightLength, _layermask);
+        Debug.DrawLine(new Vector2(position.x, position.y + gap),
+            new Vector2(position.x - rightLength, position.y + gap), Color.blue);
+
+        RaycastHit2D bottomHit = Physics2D.Raycast(new Vector2(position.x, position.y - gap), -Vector3.right,
+            rightLength, _layermask);
+        Debug.DrawLine(new Vector2(position.x, position.y - gap),
+            new Vector2(position.x - rightLength, position.y - gap), Color.blue);
+
+        return topHit.collider != null || bottomHit.collider != null;
+    }
+
+    private bool DoGroundCheck()
+    {
+        var position = transform.position;
+        RaycastHit2D midHit = Physics2D.Raycast(position, Vector3.down, downwardLength, _layermask);
+        Debug.DrawLine(position, position + (Vector3.down * downwardLength), Color.red);
+        if (midHit.collider != null)
+            return true;
 
         RaycastHit2D backHit = Physics2D.Raycast(new Vector2(position.x + _width, position.y), Vector3.down,
             downwardLength, _layermask);

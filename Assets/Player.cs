@@ -71,18 +71,12 @@ public class Player : MonoBehaviour
 
         Vector2 displacement = Vector3.zero;
 
-        //Ground/down collision
-        RaycastHit2D dHit = Physics2D.Raycast(position, Vector3.down, downwardLength, _layermask);
-        Debug.DrawLine(position, transform.position + (Vector3.down * downwardLength), Color.red);
-        if (dHit.collider != null)
+        _isAirborne = !DoGroundCheck();
+
+        if (!_isAirborne)
         {
             displacement.y = Mathf.Clamp(displacement.y, 0, Single.MaxValue);
-            _isAirborne = false;
             _jumpTime = 0.0f;
-        }
-        else
-        {
-            _isAirborne = true;
         }
 
         //Jumping 
@@ -150,5 +144,27 @@ public class Player : MonoBehaviour
 
         //apply movement
         _rigidbody.velocity += displacement;
+    }
+
+    private bool DoGroundCheck()
+    {
+        RaycastHit2D midHit = Physics2D.Raycast(transform.position, Vector3.down, downwardLength, _layermask);
+        Debug.DrawLine(transform.position, transform.position + (Vector3.down * downwardLength), Color.red);
+        if (midHit.collider != null)
+            return true;
+
+        var position = transform.position;
+
+        RaycastHit2D backHit = Physics2D.Raycast(new Vector2(position.x + _width, position.y), Vector3.down,
+            downwardLength, _layermask);
+        Debug.DrawLine(new Vector3(position.x + _width, position.y),
+            new Vector3(position.x + _width, position.y) + (Vector3.down * downwardLength), Color.blue);
+
+        RaycastHit2D frontHit = Physics2D.Raycast(new Vector2(position.x - _width, position.y), Vector3.down,
+            downwardLength, _layermask);
+        Debug.DrawLine(new Vector3(position.x - _width, position.y),
+            new Vector3(position.x - _width, position.y) + (Vector3.down * downwardLength), Color.green);
+
+        return backHit.collider != null || frontHit.collider != null;
     }
 }

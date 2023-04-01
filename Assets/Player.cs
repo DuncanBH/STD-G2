@@ -35,8 +35,11 @@ public class Player : MonoBehaviour
 
     //Logic
     private bool _isGrounded = false;
+    private bool _prev_isGrounded = false;
     private float _jumpTime = 0.0f;
     private float _activeGravity;
+
+    private AudioSource scream;
 
     void Start()
     {
@@ -51,6 +54,8 @@ public class Player : MonoBehaviour
         _layermask = ~(1 << LayerMask.NameToLayer("Player"));
 
         _activeGravity = gravity;
+
+        scream = GetComponent<AudioSource>();
     }
 
     void Update()
@@ -73,6 +78,10 @@ public class Player : MonoBehaviour
         Vector2 displacement = Vector3.zero;
 
         _isGrounded = DoGroundCheck();
+
+        if(!_prev_isGrounded && _isGrounded) scream.Play();
+
+        _prev_isGrounded = _isGrounded;
 
         if (_isGrounded)
         {

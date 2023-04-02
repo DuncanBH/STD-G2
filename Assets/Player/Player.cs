@@ -17,6 +17,12 @@ public class Player : MonoBehaviour
     [SerializeField] private float rightLength = 2;
     [SerializeField] private float downwardLength = 2;
 
+    //Exposed
+    public bool FacingRight { get; private set; } = true;
+    public bool IsWalking { get; private set; } = false;
+    public bool IsJumping { get; private set; } = false;
+    public bool IsGrounded => _isGrounded;
+
     //Set up
     private Transform _transform;
     private Rigidbody2D _rigidbody;
@@ -64,6 +70,23 @@ public class Player : MonoBehaviour
         {
             _canJump = true;
         }
+
+        IsWalking = (_inputX != 0);
+        
+        //Left/Right rotation
+        if (_isGrounded)
+        {
+            if (FacingRight && _inputX > 0)
+            {
+                transform.rotation = Quaternion.Euler(0, 0, 0);
+                FacingRight = false;
+            }
+            else if (!FacingRight && _inputX < 0)
+            {
+                transform.rotation = Quaternion.Euler(0, 180,0);
+                FacingRight = true;
+            }
+        }
     }
 
     private void FixedUpdate()
@@ -85,7 +108,8 @@ public class Player : MonoBehaviour
             _isJumping = false;
         }
 
-        if ((_inputJump > 0 && _jumpTime < jumpDuration) || (!_isGrounded && _jumpTime < jumpMinDuration) && _isJumping)
+        if ((_inputJump > 0 && _jumpTime < jumpDuration) ||
+            (!_isGrounded && _jumpTime < jumpMinDuration) && _isJumping)
         {
             //Initial propulsion
             if (_isGrounded && _canJump)

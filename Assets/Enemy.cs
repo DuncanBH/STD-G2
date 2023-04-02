@@ -4,15 +4,18 @@ using UnityEngine;
 [RequireComponent(typeof(Collider2D))]
 public class Enemy : MonoBehaviour, IDamageable
 {
-    [SerializeField] private int HealthPoints { get; set; }
+    [SerializeField] private int HealthPoints { get; set; } = 1;
 
     public void Attack(int damage)
     {
         Debug.Log("HIT");
         HealthPoints -= damage;
+        
+        if (HealthPoints <= 0) 
+            DoDie();
     }
 
-    public void OnDestroy()
+    public void DoDie()
     {
         Debug.Log("Destroyed");
         Destroy(gameObject);

@@ -20,7 +20,7 @@ public class Player : MonoBehaviour
     //Set up
     private Transform _transform;
     private Rigidbody2D _rigidbody;
-    private CapsuleCollider2D _collider;
+    private BoxCollider2D _collider;
 
     private int _layermask;
     private float _width;
@@ -42,7 +42,7 @@ public class Player : MonoBehaviour
     {
         _transform = GetComponent<Transform>();
         _rigidbody = GetComponent<Rigidbody2D>();
-        _collider = GetComponent<CapsuleCollider2D>();
+        _collider = GetComponent<BoxCollider2D>();
 
         var size = _collider.size;
         _width = size.x / 2;

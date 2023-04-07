@@ -9,7 +9,7 @@ public class PlayerAnimator : MonoBehaviour
 
     void Start()
     {
-        _player = GetComponent<Player>();
+        _player = GetComponentInParent<Player>();
         _animator = GetComponent<Animator>();
     }
 
@@ -17,14 +17,15 @@ public class PlayerAnimator : MonoBehaviour
     {
         if (_player.IsGrounded)
         {
-            if (_player.IsWalking)
-                _animator.Play("Run");
-            else
-                _animator.Play("Idle");
+            _animator.Play(_player.IsWalking ? "Run" : "Idle");
+        }
+        else if (_player.IsJumping || _player.Velocitiy.y > 0)
+        {
+            _animator.Play("Jump");
         }
         else
         {
-            //TODO: play fall
+            _animator.Play("Fall");
         }
     }
 }

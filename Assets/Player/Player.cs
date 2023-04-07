@@ -21,6 +21,7 @@ public class Player : MonoBehaviour
     public bool FacingRight { get; private set; } = true;
     public bool IsWalking { get; private set; } = false;
     public bool IsJumping { get; private set; } = false;
+    public Vector3 Velocitiy { get; private set; }
     public bool IsGrounded => _isGrounded;
 
     //Set up
@@ -66,6 +67,8 @@ public class Player : MonoBehaviour
         _inputY = Input.GetAxisRaw("Vertical");
         _inputJump = Input.GetAxisRaw("Jump");
 
+        Velocitiy = _rigidbody.velocity;
+        
         if (_inputJump == 0 && _isGrounded)
         {
             _canJump = true;

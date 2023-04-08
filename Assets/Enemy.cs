@@ -1,17 +1,18 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(Collider2D))]
 public class Enemy : MonoBehaviour, IDamageable
 {
-    [SerializeField] private int HealthPoints { get; set; } = 1;
+    [SerializeField] private int healthPoints = 1;
 
     public void Attack(int damage)
     {
-        Debug.Log("HIT");
-        HealthPoints -= damage;
-        
-        if (HealthPoints <= 0) 
+        // Debug.Log("HIT");
+        healthPoints -= damage;
+
+        if (healthPoints <= 0)
             DoDie();
     }
 

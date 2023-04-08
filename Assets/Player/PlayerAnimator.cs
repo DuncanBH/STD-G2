@@ -7,19 +7,36 @@ public class PlayerAnimator : MonoBehaviour
     private Player _player;
     private Animator _animator;
 
-    void Start()
+    private bool _attackLockedOut = false;
+
+    private void Start()
     {
         _player = GetComponentInParent<Player>();
         _animator = GetComponent<Animator>();
     }
 
-    void Update()
+    private void Update()
     {
+        if (_animator.GetCurrentAnimatorStateInfo(0).IsName("Attack"))
+        {
+            return;
+        }
+
+        if (!_player.IsAttacking)
+        {
+            _attackLockedOut = false;
+        }
+        if (_player.IsAttacking && !_attackLockedOut)
+        {
+            _attackLockedOut = true;
+            _animator.Play("Attack");
+        }
+       
         if (_player.IsGrounded)
         {
             _animator.Play(_player.IsWalking ? "Run" : "Idle");
         }
-        else if (_player.IsJumping || _player.Velocitiy.y > 0)
+        else if (_player.IsJumping || _player.Velocity.y > 0)
         {
             _animator.Play("Jump");
         }

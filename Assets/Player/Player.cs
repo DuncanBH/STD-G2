@@ -21,8 +21,9 @@ public class Player : MonoBehaviour
     public bool FacingRight { get; private set; } = true;
     public bool IsWalking { get; private set; } = false;
     public bool IsJumping { get; private set; } = false;
-    public Vector3 Velocitiy { get; private set; }
+    public bool IsAttacking { get; private set; } = false;
     public bool IsGrounded => _isGrounded;
+    public Vector3 Velocity { get; private set; }
 
     //Set up
     private Transform _transform;
@@ -44,6 +45,7 @@ public class Player : MonoBehaviour
     private bool _isGrounded = false;
     private float _jumpTime = 0.0f;
     private float _activeGravity;
+    private float _inputFire;
 
     void Start()
     {
@@ -66,8 +68,9 @@ public class Player : MonoBehaviour
         _inputX = Input.GetAxisRaw("Horizontal");
         _inputY = Input.GetAxisRaw("Vertical");
         _inputJump = Input.GetAxisRaw("Jump");
-
-        Velocitiy = _rigidbody.velocity;
+        _inputFire = Input.GetAxisRaw("Fire1");
+        
+        Velocity = _rigidbody.velocity;
         
         if (_inputJump == 0 && _isGrounded)
         {
@@ -75,6 +78,8 @@ public class Player : MonoBehaviour
         }
 
         IsWalking = (_inputX != 0);
+
+        IsAttacking = _inputFire > 0;
         
         //Left/Right rotation
         if (_isGrounded)

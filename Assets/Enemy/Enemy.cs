@@ -7,6 +7,12 @@ public class Enemy : MonoBehaviour, IDamageable
 {
     [SerializeField] private int healthPoints = 1;
 
+    private Animator _animator;
+
+    public void Start()
+    {
+        _animator = GetComponent<Animator>();
+    }
     public void Attack(int damage)
     {
         // Debug.Log("HIT");
@@ -18,7 +24,9 @@ public class Enemy : MonoBehaviour, IDamageable
 
     public void DoDie()
     {
-        Debug.Log("Destroyed");
-        Destroy(gameObject);
+        // Debug.Log("Destroyed");
+        _animator.Play("enemy_die");
+        Destroy(gameObject, 1.1f);
+        
     }
 }

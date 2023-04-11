@@ -95,6 +95,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 0.5
+  maxSpeed: 25
+  airSpeedModif: 1.5
   slowDownModif: 0.69
   jumpStrength: 15
   jumpModif: 3.89

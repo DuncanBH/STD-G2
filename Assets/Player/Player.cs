@@ -8,6 +8,8 @@ public class Player : MonoBehaviour
 {
     //Parameters
     [SerializeField] private float moveSpeed;
+    [SerializeField] private float maxSpeed;
+    [SerializeField] private float airSpeedModif = 2;
     [SerializeField] private float slowDownModif = 0.5f;
     [SerializeField] private float jumpStrength = 1;
     [SerializeField] private float jumpModif = 1;
@@ -23,7 +25,7 @@ public class Player : MonoBehaviour
     public bool IsJumping { get; private set; } = false;
     public bool IsAttacking { get; private set; } = false;
     public bool IsGrounded => _isGrounded;
-    public Vector3 Velocity { get; private set; }
+    public Vector3 RealtimeVelocity { get; private set; }
 
     //Set up
     private Transform _transform;
@@ -70,7 +72,7 @@ public class Player : MonoBehaviour
         _inputJump = Input.GetAxisRaw("Jump");
         _inputFire = Input.GetAxisRaw("Fire1");
         
-        Velocity = _rigidbody.velocity;
+        RealtimeVelocity = _rigidbody.velocity;
         
         if (_inputJump == 0 && _isGrounded)
         {
@@ -179,7 +181,10 @@ public class Player : MonoBehaviour
         }
 
         //apply movement
-        _rigidbody.velocity += displacement;
+        var rb2dvelocity = _rigidbody.velocity += displacement;
+
+        var realMax = _isGrounded ? maxSpeed : maxSpeed * airSpeedModif;
+        _rigidbody.velocity = Vector2.ClampMagnitude(rb2dvelocity, realMax);
     }
 
     private bool DoForwardCheck()

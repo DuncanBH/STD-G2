@@ -36,7 +36,7 @@ public class PlayerAnimator : MonoBehaviour
         {
             _animator.Play(_player.IsWalking ? "Run" : "Idle");
         }
-        else if (_player.IsJumping || _player.Velocity.y > 0)
+        else if (_player.IsJumping || _player.RealtimeVelocity.y > 0)
         {
             _animator.Play("Jump");
         }

@@ -17,7 +17,9 @@ public class OneWayPlatform : MonoBehaviour
 
     private void OnTriggerStay2D(Collider2D other)
     {
-        if (other.GetComponent<Player>().Velocity.y >= 0)
+        Player player = other.GetComponent<Player>();
+        
+        if (player && player.RealtimeVelocity.y >= 0)
             _edge.enabled = false;
     }
 

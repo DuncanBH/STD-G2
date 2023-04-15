@@ -183,8 +183,8 @@ public class Player : MonoBehaviour
         //apply movement
         var rb2dvelocity = _rigidbody.velocity += displacement;
 
-        var realMax = _isGrounded ? maxSpeed : maxSpeed * airSpeedModif;
-        _rigidbody.velocity = Vector2.ClampMagnitude(rb2dvelocity, realMax);
+        var currentMax = _isGrounded ? maxSpeed : maxSpeed * airSpeedModif;
+        _rigidbody.velocity = new Vector2(Mathf.Clamp(rb2dvelocity.x, -currentMax, currentMax), rb2dvelocity.y);
     }
 
     private bool DoForwardCheck()

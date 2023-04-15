@@ -20,23 +20,13 @@ public class Enemy : MonoBehaviour, IDamageable
         _initScale = _transform.localScale;
     }
 
-    private IEnumerator DmgEffect()
-    {
-        
-        _animator.Play("enemy_hit");
-
-        yield return new WaitForSeconds(.5f);
-
-        _animator.Play("crab_idle");
-    }
-    
-    
     public void Attack(int damage)
     {
         // Debug.Log("HIT");
         healthPoints -= damage;
 
-        StartCoroutine(DmgEffect());
+        _animator.Play("enemy_hit");
+
         if (healthPoints <= 0)
             DoDie();
     }

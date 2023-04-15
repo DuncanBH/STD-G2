@@ -7,37 +7,31 @@ public class ParallaxerUnit : MonoBehaviour
 {
     public float speed;
 
-    private Vector3 _previousCameraPosition;
     private Transform _camera;
-    private Vector3 _targetPosition;
+
+    private float _startPos;
+    private float _length;
 
     private float ParallaxAmount => 1f - speed;
 
-    Vector3 CameraMovement
-    {
-        get
-        {
-            Vector3 movement = _camera.position - _previousCameraPosition;
-            _previousCameraPosition = _camera.position;
-            return movement;
-        }
-    }
-
-    private void Awake()
+    void Start()
     {
         _camera = Camera.main.transform;
-        _previousCameraPosition = _camera.position;
+        _startPos = transform.position.x;
+        _length = GetComponent<SpriteRenderer>().bounds.size.x;
     }
 
-    private void LateUpdate()
+    private void FixedUpdate()
     {
-        Vector3 movement = CameraMovement;
-        if (movement == Vector3.zero) return;
+        var position = _camera.position;
+        float temp = position.x * (1 - speed);
+        float dist = (position.x * speed);
 
-        _targetPosition = new Vector3(transform.position.x + movement.x * ParallaxAmount, transform.position.y,
-            transform.position.z);
+        if (temp > _startPos + _length)
+            _startPos += _length;
+        else if (temp < _startPos - _length)
+            _startPos -= _length;
 
-        // transform.position = _targetPosition;
-        transform.SetPositionAndRotation(_targetPosition, Quaternion.identity);
+        transform.position = new Vector3(_startPos + dist, transform.position.y, transform.position.z);
     }
 }

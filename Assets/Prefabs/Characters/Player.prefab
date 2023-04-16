@@ -98,7 +98,7 @@ MonoBehaviour:
   maxSpeed: 18
   airSpeedModif: 1
   slowDownModif: 0.69
-  jumpStrength: 15
+  jumpStrength: 14.5
   jumpModif: 3.89
   jumpMinDuration: 0.2
   jumpDuration: 0.4

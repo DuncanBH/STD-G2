@@ -1,6 +1,4 @@
-using System.Collections;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(Collider2D))]
@@ -8,11 +6,13 @@ public class Enemy : MonoBehaviour, IDamageable
 {
     [SerializeField] private int healthPoints = 1;
 
-    private Animator _animator;
+    protected Animator _animator;
+
+    private Vector3 _initScale;
+
     private Transform _transform;
 
-    private Vector3 _initScale; 
-    public void Start()
+    protected virtual void Start()
     {
         _animator = GetComponent<Animator>();
         _transform = GetComponent<Transform>();
@@ -36,6 +36,5 @@ public class Enemy : MonoBehaviour, IDamageable
         // Debug.Log("Destroyed");
         _animator.Play("enemy_die");
         Destroy(gameObject, 1.1f);
-        
     }
 }

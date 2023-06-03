@@ -9,6 +9,7 @@ public class Enemy : MonoBehaviour, IDamageable
     protected Animator _animator;
 
     private Vector3 _initScale;
+    protected Rigidbody2D _rigidbody;
 
     private Transform _transform;
 
@@ -16,6 +17,7 @@ public class Enemy : MonoBehaviour, IDamageable
     {
         _animator = GetComponent<Animator>();
         _transform = GetComponent<Transform>();
+        _rigidbody = GetComponent<Rigidbody2D>();
 
         _initScale = _transform.localScale;
     }

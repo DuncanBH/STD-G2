@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class CrabEnemy : Enemy
 {
@@ -22,7 +23,7 @@ public class CrabEnemy : Enemy
                 {
                     Name = "idle", Animation = "crab_idle", Tick = () =>
                     {
-                        if (_timer > 2f)
+                        if (_timer > 1f)
                         {
                             walking = true;
                             _timer = 0.0f;
@@ -52,6 +53,7 @@ public class CrabEnemy : Enemy
                         else
                         {
                             _timer += Time.deltaTime;
+                            _rigidbody.velocity = new Vector2(Random.Range(-20f, 20f), 0);
                         }
                     },
                     Transitions = new[]
@@ -65,19 +67,14 @@ public class CrabEnemy : Enemy
 
     protected override void Start()
     {
-        Debug.Log("prebadin");
         activeState = _states["idle"];
 
         base.Start();
-
-        Debug.Log(_animator);
     }
 
     public void Update()
     {
         activeState.Tick();
-
-        Debug.Log(activeState.Name);
 
         foreach (var transition in activeState.Transitions)
             if (transition.Condition())
